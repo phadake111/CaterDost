@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000/api/v1";
+const API_BASE = "https://caterdost-api.onrender.com/api/v1";
 
 let currentUser = JSON.parse(localStorage.getItem("caterdost_user") || "null");
 let currentActiveOrderId = null;
