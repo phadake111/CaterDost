@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CaterDost</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#ea580c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+  <!-- AUTH SCREEN (Login & Register) -->
+  <div id="auth-screen" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-top-row">
+        <button class="lang-pill" onclick="toggleLanguage()"><span id="authLangBadge">मराठी</span></button>
+      </div>
+
+      <div class="auth-logo">🍲 CaterDost</div>
+      <p class="auth-tagline" id="txt-auth-tag">तुमची डिजिटल कॅटरिंग नोंद वही</p>
+      
+      <!-- Login Box -->
+      <div id="login-box">
+        <input type="tel" id="login-phone" placeholder="मोबाईल नंबर (Phone No.)" required>
+        <input type="password" id="login-pin" maxlength="4" placeholder="४-अंकी पिन (4-digit PIN)" required>
+        <button class="primary-btn" onclick="handleLogin()" id="btn-login">लॉगिन करा</button>
+        <p class="switch-auth-text" id="txt-no-account">नवीन आहात? <a href="#" onclick="showAuthMode('signup')">नवीन खाते उघडा</a></p>
+      </div>
+
+      <!-- Signup Box -->
+      <div id="signup-box" style="display: none;">
+        <input type="text" id="reg-name" placeholder="तुमचे / कॅटरिंगचे नाव (Name)*" required>
+        <input type="tel" id="reg-phone" placeholder="मोबाईल नंबर (Phone No.)*" required>
+        <input type="password" id="reg-pin" maxlength="4" placeholder="४-अंकी पिन ठेवा (4-digit PIN)*" required>
+        <button class="primary-btn" onclick="handleSignup()" id="btn-register">खाते तयार करा</button>
+        <p class="switch-auth-text" id="txt-have-account">आधीच खाते आहे? <a href="#" onclick="showAuthMode('login')">लॉगिन करा</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION SHELL -->
+  <div id="app-shell" style="display: none;">
+    <!-- Minimalist Top Bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-icon">🍲</span>
+        <span class="brand-name">CaterDost</span>
+      </div>
+      <div class="top-actions">
+        <button class="lang-pill" onclick="toggleLanguage()"><span id="mainLangBadge">मराठी</span></button>
+        <!-- Minimal Sign Out Button -->
+        <button class="mini-signout-btn" onclick="handleSignOut()" title="Sign Out">
+          <svg class="signout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span class="signout-label" id="txt-signout">बाहेर</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+
+      <!-- 1. DASHBOARD VIEW -->
+      <section id="view-dashboard" class="app-view active">
+        <!-- Clean User Greeting Banner -->
+        <div class="user-greeting-banner">
+          <span class="greeting-badge" id="txt-greet-badge">👋 स्वागत आहे</span>
+          <h2 class="user-name-display" id="user-display-name">कॅटरर</h2>
+          <p class="user-subtext" id="txt-today-sub">आजच्या दिवसातील कामांची स्थिती</p>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-card alert-card">
+            <span class="metric-label" id="txt-pending-utensils">बाकी भांडी (Utensils)</span>
+            <span class="metric-val" id="val-missing-utensils">0</span>
+          </div>
+          <div class="metric-card money-card">
+            <span class="metric-label" id="txt-pending-money">बाकी रक्कम (Pending)</span>
+            <span class="metric-val" id="val-pending-money">₹0</span>
+          </div>
+        </div>
+
+        <div class="section-title" id="txt-today-orders-head">आजच्या ऑर्डर्स (Today's Orders)</div>
+        <div id="today-orders-list" class="cards-stack"></div>
+
+        <div class="section-title" id="txt-upcoming-head">पुढील ऑर्डर्स (Upcoming - 7 Days)</div>
+        <div id="upcoming-orders-list" class="cards-stack"></div>
+      </section>
+
+      <!-- 2. DATE SEARCH VIEW -->
+      <section id="view-date-search" class="app-view">
+        <div class="view-header">
+          <h2 id="txt-date-search-head">तारीख तपासा (Check Date)</h2>
+          <p id="txt-date-search-sub">Check existing bookings before taking a new order</p>
+        </div>
+        <div class="search-input-box">
+          <input type="date" id="searchDateInput" class="custom-date-picker">
+          <button class="primary-btn" onclick="fetchDateCommitments()" id="btn-check-date">तपासा (Check)</button>
+        </div>
+        <div id="date-results-area" style="display: none;">
+          <div class="section-title" id="txt-own-commitments-head">स्वतःच्या ऑर्डर्स (Own Orders)</div>
+          <div id="date-own-list" class="cards-stack"></div>
+          <div class="section-title" id="txt-ext-commitments-head">बाहेरचे काम (External Work)</div>
+          <div id="date-ext-list" class="cards-stack"></div>
+        </div>
+      </section>
+
+      <!-- 3. OWN ORDERS LIST VIEW -->
+      <section id="view-orders" class="app-view">
+        <div class="view-header">
+          <h2 id="txt-orders-head">माझ्या ऑर्डर्स (Own Orders)</h2>
+        </div>
+        <div id="all-orders-list" class="cards-stack"></div>
+      </section>
+
+      <!-- 4. EXTERNAL WORK VIEW -->
+      <section id="view-external" class="app-view">
+        <div class="view-header flex-between">
+          <h2 id="txt-ext-work-head">बाहेरचे काम (External Work)</h2>
+          <button class="small-action-btn" onclick="openExternalWorkModal()">+</button>
+        </div>
+        <div id="external-work-list" class="cards-stack"></div>
+      </section>
+
+      <!-- 5. HISTORY & SEARCH VIEW -->
+      <section id="view-history" class="app-view">
+        <div class="view-header">
+          <h2 id="txt-history-head">नोंद वही (History Diary)</h2>
+        </div>
+        <div class="search-input-box">
+          <input type="text" id="historySearchInput" placeholder="ग्राहक किंवा हेल्परचे नाव टाका...">
+          <button class="primary-btn" onclick="searchHistory()">शोधा (Search)</button>
+        </div>
+        <div id="history-results" class="cards-stack"></div>
+      </section>
+
+      <!-- 6. ORDER DETAIL HUB VIEW -->
+      <section id="view-order-detail" class="app-view">
+        <button class="back-link-btn" onclick="switchTab('view-orders', document.querySelectorAll('.dock-item')[2])">← मागे जा (Back)</button>
+        <div id="order-detail-content"></div>
+      </section>
+
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab-btn" onclick="openQuickBookModal()">
+      <span>＋</span>
+      <span class="fab-text" id="txt-fab">नवीन ऑर्डर</span>
+    </button>
+
+    <!-- Floating Bottom Navigation -->
+    <nav class="bottom-dock">
+      <button class="dock-item active" onclick="switchTab('view-dashboard', this)">
+        <span class="dock-icon">🏠</span>
+        <span class="dock-label" id="tab-home">होम</span>
+      </button>
+      <button class="dock-item" onclick="switchTab('view-date-search', this)">
+        <span class="dock-icon">🔍</span>
+        <span class="dock-label" id="tab-search">तपासा</span>
+      </button>
+      <button class="dock-item" onclick="switchTab('view-orders', this)">
+        <span class="dock-icon">📦</span>
+        <span class="dock-label" id="tab-orders">ऑर्डर्स</span>
+      </button>
+      <button class="dock-item" onclick="switchTab('view-external', this)">
+        <span class="dock-icon">🤝</span>
+        <span class="dock-label" id="tab-external">बाहेरचे</span>
+      </button>
+      <button class="dock-item" onclick="switchTab('view-history', this)">
+        <span class="dock-icon">📖</span>
+        <span class="dock-label" id="tab-history">नोंदवही</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modal: Quick Booking -->
+  <div id="modal-quick-book" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-quick-book')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <h3>नवीन ऑर्डर नोंदवा (Quick Booking)</h3>
+      <form id="quickBookForm" onsubmit="submitQuickBook(event)">
+        <div class="form-row">
+          <input type="text" id="qb-name" placeholder="ग्राहक नाव (Client Name)*" required>
+          <input type="tel" id="qb-phone" placeholder="फोन नंबर (Phone)*" required>
+        </div>
+        <div class="form-row">
+          <input type="text" id="qb-title" placeholder="प्रसंग (e.g. Wedding, Birthday)*" required>
+          <input type="date" id="qb-date" required>
+        </div>
+        <div class="form-row">
+          <input type="text" id="qb-time" placeholder="वेळ (e.g. 11:00 AM)">
+          <input type="number" id="qb-people" placeholder="माणसे (Guests)">
+        </div>
+        <input type="text" id="qb-location" placeholder="पत्ता / Location">
+        <div class="form-row">
+          <input type="number" id="qb-agreed" placeholder="ठरलेली रक्कम (Total ₹)">
+          <input type="number" id="qb-advance" placeholder="अडव्हान्स (Advance ₹)">
+        </div>
+        <textarea id="qb-notes" placeholder="टीप (Notes - e.g. Medium spicy)"></textarea>
+        <button type="submit" class="submit-action-btn">ऑर्डर बुक करा (Confirm Booking)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Status Changer Dropdown (No alert prompts) -->
+  <div id="modal-change-status" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-change-status')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <h3 id="txt-status-modal-title">ऑर्डर स्टेटस बदला</h3>
+      
+      <div class="status-select-wrapper">
+        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 8px;">नवीन स्टेटस निवडा:</label>
+        <select id="select-new-status" class="status-dropdown">
+          <option value="BOOKED">🟡 BOOKED (नोंदणी झाली)</option>
+          <option value="READY_FOR_EXECUTION">🔵 READY FOR EXECUTION (तयार आहे)</option>
+          <option value="COMPLETED">🟢 COMPLETED (पूर्ण झाली)</option>
+          <option value="CANCELLED">🔴 CANCELLED (रद्द केली)</option>
+        </select>
+      </div>
+
+      <button class="primary-btn" onclick="saveStatusChange()">स्टेटस सेव्ह करा</button>
+    </div>
+  </div>
+  <!-- Modal: External Work -->
+  <div id="modal-external-work" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-external-work')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <h3>बाहेरचे काम जोडा (External Shift)</h3>
+      <form id="externalWorkForm" onsubmit="submitExternalWork(event)">
+        <input type="text" id="ext-hired-by" placeholder="कोणाचे काम आहे? (Caterer Name)*" required>
+        <input type="tel" id="ext-phone" placeholder="फोन नंबर (Phone)">
+        <div class="form-row">
+          <input type="date" id="ext-date" required>
+          <input type="text" id="ext-reach-time" placeholder="पोहोचण्याची वेळ (e.g. 9 AM)">
+        </div>
+        <input type="text" id="ext-location" placeholder="कामाचे ठिकाण (Location)">
+        <input type="number" id="ext-pay" placeholder="मिळणारे पैसे (Agreed Pay ₹)*" required>
+        <textarea id="ext-notes" placeholder="टीप"></textarea>
+        <button type="submit" class="submit-action-btn">सेव्ह करा</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Sub-Item (Menu, Resources, Helpers, Utensils, Payments) -->
+  <div id="modal-add-subitem" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-add-subitem')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <h3 id="subitem-modal-title">माहिती भरा</h3>
+      <div id="subitem-form-container"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+  <!-- Modal: Edit Core Booking Information -->
+  <div id="modal-edit-order" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-edit-order')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <h3>ऑर्डर माहिती बदला (Edit Order Details)</h3>
+      <form id="editOrderForm" onsubmit="submitEditOrder(event)">
+        <div class="form-row">
+          <input type="text" id="edit-qb-name" placeholder="ग्राहक नाव (Client Name)*" required>
+          <input type="tel" id="edit-qb-phone" placeholder="फोन नंबर (Phone)*" required>
+        </div>
+        <div class="form-row">
+          <input type="text" id="edit-qb-title" placeholder="प्रसंग (Order Title)*" required>
+          <input type="date" id="edit-qb-date" required>
+        </div>
+        <div class="form-row">
+          <input type="text" id="edit-qb-time" placeholder="वेळ (Time)">
+          <input type="number" id="edit-qb-people" placeholder="माणसे (Pax)">
+        </div>
+        <input type="text" id="edit-qb-location" placeholder="पत्ता / Location">
+        <div class="form-row">
+          <input type="number" id="edit-qb-agreed" placeholder="ठरलेली रक्कम (Total ₹)">
+          <input type="number" id="edit-qb-advance" placeholder="अडव्हान्स (Advance ₹)">
+        </div>
+        <textarea id="edit-qb-notes" placeholder="टीप (Notes)"></textarea>
+        <button type="submit" class="submit-action-btn">बदल सेव्ह करा (Save Changes)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View & Edit Existing Sub-items (List with Edit/Delete actions) -->
+  <div id="modal-manage-section" class="bottom-sheet-backdrop" onclick="closeModalOnBackdrop(event, 'modal-manage-section')">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="flex-between" style="margin-bottom: 12px;">
+        <h3 id="section-modal-title">विभाग तपशील</h3>
+        <button class="small-action-btn" id="btn-add-to-section">+ नवीन जोडा</button>
+      </div>
+      <div id="section-items-container" class="cards-stack"></div>
+    </div>
+  </div>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js")
+        .then((reg) => console.log("Service Worker Registered:", reg.scope))
+        .catch((err) => console.error("Service Worker registration failed:", err));
+    });
+  }
+</script>
+</body>
+</html>

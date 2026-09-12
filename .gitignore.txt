@@ -1,0 +1,13 @@
+# Virtual Environment
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Sensitive environment variables
+.env
+
+# OS/Editor generated files
+.vscode/
+.DS_Store
+*.log
