@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
-import app.models as models  # Ensures all ORM models are registered
+import app.models as models  # Force loading models into Base metadata
 from app.routes import auth, orders, items, resources, helpers
 
-# Create tables if they do not exist
+# Ensure tables are auto-created on Render startup
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CaterDost API")
