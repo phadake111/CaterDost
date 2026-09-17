@@ -1,40 +1,38 @@
 const CACHE_NAME = "caterdost-v1";
 const ASSETS_TO_CACHE = [
+  "./",
   "./index.html",
   "./style.css",
-  "./app.js"
+  "./app.js",
+  "./manifest.json"
 ];
 
-// Install: Cache essential app shell assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Activate: Clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    caches.keys().then((keys) =>
+      Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
+          if (key !== CACHE_NAME) return caches.delete(key);
         })
-      );
-    })
+      )
+    )
   );
   self.clients.claim();
 });
 
-// Fetch: Serve from cache first, fall back to network for API calls
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.includes("/api/v1/")) {
-    event.respondWith(fetch(event.request));
+  // Never intercept backend API requests
+  if (
+    event.request.url.includes("/api/") ||
+    event.request.url.includes("onrender.com")
+  ) {
     return;
   }
 
