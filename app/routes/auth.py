@@ -8,12 +8,12 @@ router = APIRouter()
 
 
 class LoginRequest(BaseModel):
-    phone_number: str
+    phone: str
     pin: str
 
 
 class RegisterRequest(BaseModel):
-    phone_number: str
+    phone: str
     pin: str
     name: str | None = None
 
@@ -29,7 +29,7 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
             )
 
         new_user = User(
-            phone=data.phone_number,
+            phone=data.phone,
             pin=data.pin,
             name=data.name
         )
@@ -53,7 +53,7 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     try:
         # Check if user exists in database
-        user = db.query(User).filter(User.phone == data.phone_number).first()
+        user = db.query(User).filter(User.phone == data.phone).first()
         
         if not user or user.pin != data.pin:
             raise HTTPException(
